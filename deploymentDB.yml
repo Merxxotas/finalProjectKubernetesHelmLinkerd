@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pythonfastapidb
+spec:
+  selector:
+    matchLabels:
+      app: pythonfastapidb
+  template:
+    metadata:
+      labels:
+        app: pythonfastapidb
+    spec:
+      containers:
+        - name: pythonfastapidb
+          image: mongo
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: storage
+              mountPath: /data/db
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc

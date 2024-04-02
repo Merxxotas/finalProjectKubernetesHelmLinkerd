@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apikubernetes-personal #The name of the Kubernetes Deployment to be created in the Kubernetes cluster
+  labels:
+    app: fastapidb-personal
+spec:
+  replicas: 2 #The number of pods to be created in the Kubernetes cluster for the application container
+  selector:
+    matchLabels:
+      app: fastapidb-personal
+  template:
+    metadata:
+      labels:
+        app: fastapidb-personal
+    spec:
+      containers:
+        - name: pythonfastapidb #The name of the application container
+          image: merxxaz/python-app:v2.5.0 #The Docker image for building the application container
+          ports:
+            - containerPort: 8000 #The port for the application container

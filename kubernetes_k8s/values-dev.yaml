@@ -1,0 +1,6 @@
+replicaCount: 2
+image:
+  repository: merxxaz/python-app
+  pullPolicy: IfNotPresent
+  tag: v2.5.0
+containerPort: 8000

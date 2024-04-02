@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pythonfastapidbpers
+description: A Helm chart for my Python app with FastAPI for the final miniproject
+type: application
+version: 0.1.0
+appVersion: 1.0.0

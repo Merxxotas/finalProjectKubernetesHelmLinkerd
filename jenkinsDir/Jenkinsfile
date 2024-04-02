@@ -1,0 +1,56 @@
+def remote = [:]
+remote.name = 'brayanmarin'
+remote.host = '172.28.92.49'
+remote.allowAnyHosts = true
+
+pipeline {
+    agent any // 'agent' should be outside the 'environment' block and directly under 'pipeline'
+    environment {
+        dockerImageName = 'merxxaz/python-app:v2.5.0'
+        dockerImage = ''
+        SSH_CREDS = credentials('23f6de3f-0ddf-4ca8-9c0d-18960773cd0e')
+    }
+    stages {
+        stage('SSH Connection') {
+            steps {
+                script {
+                    // Assuming SSH_CREDS_USR and SSH_CREDS_PSW are environment variables, they should be accessed as follows:
+                    remote.user = env.SSH_CREDS_USR
+                    remote.password = env.SSH_CREDS_PSW
+                }
+            }
+        }
+        // stage('Checkout Source') {
+        //     steps {
+        //         sh 'ls -l'
+        //     }
+        // }
+        stage('Checkout Source') {
+            steps {
+                checkout scm
+                sh 'pwd'
+                sh 'ls -la'
+            }
+        }
+        stage('Setting up Files for K8s') {
+            steps{
+                sshPut(remote: remote, from: 'kubernetes_k8s/Chart.yaml', into: '/home/brayanmarin/DevOps/miniProjects/6thWeek1/kubernetes_k8s')
+                sshPut(remote: remote, from: 'kubernetes_k8s/values-dev.yaml', into: '/home/brayanmarin/DevOps/miniProjects/6thWeek1/kubernetes_k8s')
+                sshPut(remote: remote, from: 'kubernetes_k8s/templates/deployment.yaml', into: '/home/brayanmarin/DevOps/miniProjects/6thWeek1/kubernetes_k8s/templates')
+                sshPut(remote: remote, from: 'kubernetes_k8s/templates/service.yaml', into: '/home/brayanmarin/DevOps/miniProjects/6thWeek1/kubernetes_k8s/templates')
+            }
+        }
+        stage('Changing the namespace to the required --dev--') {
+            steps {
+                sshCommand remote: remote, command: 'minikube kubectl -- config use-context dev'
+            }
+        }
+
+        stage('Deploying the application') {
+            steps {
+                sshCommand remote: remote, command: 'cd /home/brayanmarin/DevOps/miniProjects/6thWeek1/kubernetes_k8s && helm install pythonfastapidbpers . -f values-dev.yaml'
+            }
+        }
+
+    }
+}
